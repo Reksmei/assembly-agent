@@ -1,0 +1,16 @@
+langchain-text-splitters
+pypdf
+langchain
+langgraph 
+langchain-huggingface 
+transformers 
+torch 
+accelerate
+langchain-community
+sentence-transformers
+python-dotenv
+python-multipart
+fastapi
+uvicorn
+langchain-chroma
+langchain-ollama
