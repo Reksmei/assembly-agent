@@ -2,7 +2,7 @@
 
 # Assembly Agent
 
-An offline-capable, multimodal Retrieval-Augmented Generation (RAG) assistant with voice output, built with **FastAPI**, **LangChain / LangGraph**, **ChromaDB**, **Google Gemma** (`gemma-4-E2B-it` + `embeddinggemma-300m`), and **Hugging Face TTS** (`facebook/mms-tts-eng`).
+An offline-capable, multimodal Retrieval-Augmented Generation (RAG) agent with voice output, built with **FastAPI**, **LangChain / LangGraph**, **ChromaDB**, **Google Gemma** (`gemma-4-E2B-it` + `embeddinggemma-300m`), and **Hugging Face TTS** (`facebook/mms-tts-eng`).
 
 The agent helps users assemble an IKEA BRIMNES cabinet step by step. Users can ask natural-language questions and upload photos of their assembly progress; the agent queries the embedded PDF instruction manual, inspects the uploaded image, and returns both text guidance and spoken audio (`WAV`) so users can listen hands-free while assembling.
 
