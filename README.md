@@ -1,6 +1,6 @@
-![Assembly Agent Architecture](https://storage.googleapis.com/ai-pg-demo-media/assembly_agent_architecture.png)
-
 # Assembly Agent
+
+![Assembly Agent Architecture](https://storage.googleapis.com/ai-pg-demo-media/assembly_agent_architecture.png)
 
 An offline-capable, multimodal Retrieval-Augmented Generation (RAG) agent with voice output, built with **FastAPI**, **LangChain / LangGraph**, **ChromaDB**, **Google Gemma** (`gemma-4-E2B-it` + `embeddinggemma-300m`), and **Hugging Face TTS** (`facebook/mms-tts-eng`).
 
