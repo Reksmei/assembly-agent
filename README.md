@@ -1,43 +1,25 @@
+![Assembly Agent Architecture](https://storage.googleapis.com/ai-pg-demo-media/assembly_agent_architecture.png)
+
 # Assembly Agent
 
-An offline-capable, multimodal Retrieval-Augmented Generation (RAG) assistant built with **FastAPI**, **LangChain / LangGraph**, **ChromaDB**, and **Google Gemma** (`gemma-4-E2B-it` + `embeddinggemma-300m`).
+An offline-capable, multimodal Retrieval-Augmented Generation (RAG) assistant with voice output, built with **FastAPI**, **LangChain / LangGraph**, **ChromaDB**, **Google Gemma** (`gemma-4-E2B-it` + `embeddinggemma-300m`), and **Hugging Face TTS** (`facebook/mms-tts-eng`).
 
-The agent helps users assemble an IKEA BRIMNES cabinet step by step. Users can ask natural-language questions and upload photos of their assembly progress; the agent queries the embedded PDF instruction manual and inspects the uploaded image to advise on next steps, missing parts, or steps that need to be redone.
+The agent helps users assemble an IKEA BRIMNES cabinet step by step. Users can ask natural-language questions and upload photos of their assembly progress; the agent queries the embedded PDF instruction manual, inspects the uploaded image, and returns both text guidance and spoken audio (`WAV`) so users can listen hands-free while assembling.
 
 Whilst built in this case for assembling IKEA furniture, this architecture can be easily repurposed for motorsport garages to help engineers repair/build equipment, toystores to help children build lego, and much more, all whilst avoiding sharing data with the cloud.
+
+***Note the frontend has yet to be built***
 
 ---
 
 ## How It Works
 
-```
-User / Frontend (yet to be built)
-  │
-  ├── 1. POST /start_session ──────► Creates session_id + uploads-<session_id>/ folder
-  ├── 2. POST /upload_image  ──────► Validates MIME type & saves assembly photo to disk
-  ├── 3. POST /call_agent    ──────► Sends text query + photo (base64) + session_id
-  │                                      │
-  │                                      ▼
-  │                            LangGraph Gemma Agent (InMemorySaver by thread_id)
-  │                                      │
-  │                                      ├── Calls @tool: retrieve_relevant_info(query_str)
-  │                                      │        │
-  │                                      │        ▼
-  │                                      │   ChromaDB (./vectorDB)
-  │                                      │   Embedded with google/embeddinggemma-300m
-  │                                      │   from brimes-assembly.pdf
-  │                                      │
-  │                                      └── Synthesizes answer from manual chunks + image
-  │
-  └── 4. DELETE /end_session ──────► Deletes uploads-<session_id>/ directory
-```
-
 1. **Document Ingestion ([`document_embeddings.py`](document_embeddings.py)):**
    Loads [`brimes-assembly.pdf`](brimes-assembly.pdf) using `PyPDFLoader`, splits pages into overlapping text chunks (`chunk_size=1000`, `chunk_overlap=200`) with `RecursiveCharacterTextSplitter`, embeds them locally using `google/embeddinggemma-300m` (`HuggingFaceEmbeddings`), and persists the vectors into `./vectorDB` via ChromaDB.
 2. **Retrieval Tool ([`tool.py`](tool.py)):**
    Defines the [`retrieve_relevant_info`](tool.py#L21) LangChain `@tool`, which runs a similarity search (`k=3`) against the persisted ChromaDB store and returns the matching instruction manual text and page numbers.
-3. **Stateful Agent & REST API ([`main.py`](main.py)):**
-   Initializes the local Gemma chat model (`gemma4:e2b` via `ChatOllama` or `google/gemma-4-E2B-it` via Hugging Face) and binds [`retrieve_relevant_info`](tool.py#L21) inside a LangGraph agent backed by `InMemorySaver`. Each user session is tracked via `thread_id: session_id` so multi-turn follow-up questions retain context.
+3. **Stateful Agent, TTS Voice Output & REST API ([`main.py`](main.py)):**
+   Initializes the local Gemma chat model (`gemma4:e2b` via `ChatOllama` or `google/gemma-4-E2B-it` via Hugging Face) and binds [`retrieve_relevant_info`](tool.py#L21) inside a LangGraph agent backed by `InMemorySaver`. Each user session is tracked via `thread_id: session_id` so multi-turn follow-up questions retain context. Before returning, the agent's text response is passed through a lightweight Hugging Face `text-to-speech` pipeline (`facebook/mms-tts-eng`) and encoded as base64 WAV audio (`audio_base64`) alongside the text.
 
 ---
 
@@ -66,7 +48,7 @@ assembly-agent/
 |---|---|---|---|
 | `POST` | `/start_session` | None | Generates a `session_id` and creates `uploads-<session_id>/`. |
 | `POST` | `/upload_image` | `session_id` (query), `file` (multipart) | Validates image type (`png`, `jpg`, `gif`, `webp`), saves to disk, and returns its URL. |
-| `POST` | `/call_agent` | `session_id`, `text_query`, `image_url` (optional) | Invokes the Gemma agent with conversation memory and optional base64-encoded image. |
+| `POST` | `/call_agent` | `session_id`, `text_query`, `image_url` (optional) | Invokes the Gemma agent with conversation memory and optional base64-encoded image, and returns both `text` and spoken `audio_base64` (`WAV`) generated via Hugging Face TTS. |
 | `DELETE` | `/end_session` | `session_id` | Deletes the `uploads-<session_id>/` directory when the user finishes. |
 
 ---

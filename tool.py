@@ -9,6 +9,7 @@ load_dotenv()
 
 os.getenv("HF_TOKEN")
 
+# Initialize constants for embedding user queries
 embeddings = HuggingFaceEmbeddings(
     model_name="google/embeddinggemma-300m",
 )

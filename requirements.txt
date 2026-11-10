@@ -14,3 +14,4 @@ fastapi
 uvicorn
 langchain-chroma
 langchain-ollama
+scipy

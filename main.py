@@ -10,6 +10,10 @@ from langchain.agents import create_agent
 from langchain_ollama import ChatOllama
 from langgraph.checkpoint.memory import InMemorySaver
 from document_embeddings import main
+from transformers import pipeline
+import io
+import numpy as np
+import scipy.io.wavfile
 
 app = FastAPI()
 
@@ -38,6 +42,9 @@ agent = create_agent(
     checkpointer=InMemorySaver(),
     system_prompt=system_prompt
 )
+
+# Load a lightweight tts generator from Hugging Face
+tts = pipeline("text-to-speech", model="facebook/mms-tts-eng")
 
 @app.post("/start_session")
 def start_session():
@@ -111,8 +118,20 @@ def call_agent(session_id: str, text_query: str, image_url: str = None):
         config=config
     )
 
-    output = result["messages"][-1].content
-    return output
+    text_output = result["messages"][-1].content
+    
+    # Convert agent text response to speech
+    speech = tts(text_output)
+    audio_array = (speech["audio"][0] * 32767).astype(np.int16)
+
+    wav_buffer = io.BytesIO()
+    scipy.io.wavfile.write(wav_buffer, rate=speech["sampling_rate"], data=audio_array)
+    audio_b64 = base64.b64encode(wav_buffer.getvalue()).decode("utf-8")
+
+    return {
+        "text": text_output,
+        "audio_base64": f"data:audio/wav;base64,{audio_b64}",
+    }
 
 @app.delete("/end_session")
 def end_session(session_id: str):
