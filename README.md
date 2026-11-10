@@ -72,15 +72,15 @@ assembly-agent/
    ```
 
 3. **Create a ChromaDB directory**
-```bash
-mkdir vectorDB
-```
+   ```bash
+   mkdir vectorDB
+   ```
 
 4. **Pull the local Gemma model in Ollama:**
    ```bash
    ollama pull gemma4:e2b
    ```
-   
+
 5. **Start the server:**
    ```bash
    python3 main.py
