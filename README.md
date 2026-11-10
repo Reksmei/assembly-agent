@@ -1,4 +1,4 @@
-# Assembly Agent
+# Assembly Agent🛠️
 
 ![Assembly Agent Architecture](https://storage.googleapis.com/ai-pg-demo-media/assembly_agent_architecture.png)
 
