@@ -55,20 +55,33 @@ assembly-agent/
 
 ## Running Locally for Development
 
-1. **Set up environment variables:**
-   Add your Hugging Face token (after accepting the license on `huggingface.co/google/embeddinggemma-300m`) to `.env`:
+1. **Create a .env file and set up environment variables:**
+   Inside the assembly agent directory, use the command line to create a .env file:
+   ```bash
+   touch .env
+   ```
+
+   Add your Hugging Face token (after accepting the license on `huggingface.co/google/embeddinggemma-300m`) to `.env`
    ```env
    HF_TOKEN=hf_your_token_here
    ```
+
 2. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
-3. **Pull the local Gemma model in Ollama:**
+
+3. **Create a ChromaDB directory**
+```bash
+mkdir vectorDB
+```
+
+4. **Pull the local Gemma model in Ollama:**
    ```bash
    ollama pull gemma4:e2b
    ```
-4. **Start the server:**
+   
+5. **Start the server:**
    ```bash
    python3 main.py
    ```
