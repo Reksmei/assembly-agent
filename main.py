@@ -62,6 +62,9 @@ def start_session():
 
 @app.post("/upload_image")
 async def upload(session_id: str, request: Request, file: UploadFile = File(...)):
+    '''
+    Uploads image files to be stored on the server for the duration of the session.
+    '''
     
     # Look up the extension for the declared content type; None if not allowed
     ALLOWED = {
